@@ -2,12 +2,24 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import * as dat from 'lil-gui'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
+// import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js'
+
+
 
 const gltfLoader = new GLTFLoader()
+
 const cubeTextureLoader = new THREE.CubeTextureLoader()
+
+const textureloader = new THREE.TextureLoader()
+
+// const rgbeloader = new RGBELoader()
+// const exrloader = new EXRLoader()
+
+
 /**
  * Base
- */
+ */ 
 // Debug
 const gui = new dat.GUI()
 const global = {}
@@ -24,7 +36,7 @@ const updateAllMaterials = () =>
     {
         if(child.isMesh && child.material.isMeshStandardMaterial)
         {
-            child.material.envIntensity = 3
+            child.material.envMapIntensity = global.envMapIntensity
         }
     })
 }
@@ -33,6 +45,12 @@ const updateAllMaterials = () =>
  * environment map
  */
 //LOW DYNAMIC RANGE TEXTURE
+scene.backgroundBlurriness = .1
+scene.backgroundIntensity = 1
+
+
+gui.add(scene, 'backgroundBlurriness').min(0).max(1).step(.001)
+gui.add(scene, 'backgroundIntensity').min(0).max(10).step(.001)
 
 global.envMapIntensity = 1
 
@@ -43,19 +61,36 @@ gui
     .step(0.001)
     .onChange(updateAllMaterials)
 
-const environmentMap = cubeTextureLoader.load([
-    'environmentMaps/0/px.png',
-    'environmentMaps/0/nx.png',
-    'environmentMaps/0/py.png',
-    'environmentMaps/0/ny.png',
-    'environmentMaps/0/pz.png',
-    'environmentMaps/0/nz.png'
-])
+// const environmentMap = cubeTextureLoader.load([
+//     'environmentMaps/0/px.png',
+//     'environmentMaps/0/nx.png',
+//     'environmentMaps/0/py.png',
+//     'environmentMaps/0/ny.png',
+//     'environmentMaps/0/pz.png',
+//     'environmentMaps/0/nz.png'
+// ])
 
-scene.environment = environmentMap
+// scene.environment = environmentMap
+
+// scene.background = environmentMap
+
+//hdr (rgbe) loader
+
+// rgbeloader.load('/environmentMaps/0/2k.hdr', (environmentMap) =>
+// {
+//     environmentMap.mapping = THREE.EquirectangularReflectionMapping
+//     console.log(environmentMap)
+//     scene.background = environmentMap
+//     scene.environment = environmentMap
+// })
+
+
+const environmentMap = textureloader.load('/environmentMaps/blockadesLabsSkybox/digital_painting_neon_city_night_orange_lights_.jpg')
+environmentMap.mapping = THREE.EquirectangularReflectionMapping
 
 scene.background = environmentMap
-
+scene.environment = environmentMap
+environmentMap.ColorSpace = THREE.SRGBColorSpace
 /**
  * Torus Knot
  */
